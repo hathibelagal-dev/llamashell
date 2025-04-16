@@ -5,6 +5,7 @@ import sys
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.styles import Style
+from prompt_toolkit.completion import Completer, Completion
 from . import __VERSION__
 
 BOLD = "\033[1m"
@@ -18,6 +19,31 @@ RED = "\033[31m"
 
 def show_welcome():
     print(f"{BOLD}{YELLOW}Welcome to LLaMa Shell v{__VERSION__}{RESET}")
+
+class ShellCompleter(Completer):
+    def __init__(self):
+        self.built_ins = ["cd", "exit", "quit", "bye"]
+
+    def get_completions(self, document, complete_event):
+        text = document.text_before_cursor
+        word = document.get_word_before_cursor()
+
+        if not text.strip() or text[:text.find(word)].strip() in ["", "|", "<", ">", ">>"]:
+            for cmd in self.built_ins:
+                if cmd.startswith(word):
+                    yield Completion(cmd, start_position=-len(word))
+            for path in os.environ.get("PATH", "").split(os.pathsep):
+                if os.path.isdir(path):
+                    for f in os.listdir(path):
+                        if f.startswith(word) and os.access(os.path.join(path, f), os.X_OK):
+                            yield Completion(f, start_position=-len(word))
+        else:
+            try:
+                for f in os.listdir():
+                    if f.startswith(word) and (os.path.isfile(f) or os.path.isdir(f)):
+                        yield Completion(f, start_position=-len(word))
+            except OSError:
+                pass
 
 def parse_input(user_input):
     if "|" in user_input:
@@ -87,8 +113,8 @@ def execute_command(command, stdin=None, stdout=subprocess.PIPE):
             print(f"{RED}cd: {e}{RESET}")
             return True
 
-    interactive_commands = ["vi", "vim", "ps", "top", "less", "nano", "more", "python", "python3"]
-    if args[0] in interactive_commands:
+    interactive_commands = ["vi", "vim", "ps", "top", "less", "nano", "more"]
+    if args[0] in interactive_commands or (args[0] in ["python", "python3"] and len(args) == 1):
         if input_file or output_file or append_file or stdin:
             print(f"{RED}Interactive commands cannot use redirection or pipes{RESET}")
             return True
@@ -176,7 +202,9 @@ def main_loop():
     session = PromptSession(
         history=InMemoryHistory(),
         style=style,
-        message=lambda: [('class:prompt', f'{os.getcwd()}> ')]
+        message=lambda: [('class:prompt', f'{os.getcwd()}> ')],
+        completer=ShellCompleter(),
+        complete_while_typing=False
     )
 
     while True:

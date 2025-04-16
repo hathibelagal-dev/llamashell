@@ -7,6 +7,7 @@ from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.styles import Style
 from prompt_toolkit.completion import Completer, Completion
 from . import __VERSION__
+from .llm import LLM
 
 BOLD = "\033[1m"
 GREEN = "\033[32m"
@@ -18,6 +19,10 @@ CYAN = "\033[36m"
 RED = "\033[31m"
 
 previous_directory = "~"
+llm_model = "meta-llama/Llama-3.2-1B-Instruct"
+print(f"""{YELLOW}Loading {llm_model.split("/")[1]}...{RESET}""")
+llm = LLM(llm_model)
+print(f"{YELLOW}LLM is now ready.{RESET}")
 
 def show_welcome():
     print(f"{BOLD}{YELLOW}Welcome to LLaMa Shell v{__VERSION__}{RESET}")

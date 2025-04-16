@@ -1,7 +1,7 @@
 import os
 import subprocess
 import shlex
-import sys
+import re
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.styles import Style
@@ -16,6 +16,8 @@ RESET = "\033[0m"
 WHITE = "\033[37m"
 CYAN = "\033[36m"
 RED = "\033[31m"
+
+previous_directory = "~"
 
 def show_welcome():
     print(f"{BOLD}{YELLOW}Welcome to LLaMa Shell v{__VERSION__}{RESET}")
@@ -45,7 +47,17 @@ class ShellCompleter(Completer):
             except OSError:
                 pass
 
+def expand_variables(user_input):
+    def replace_var(match):
+        var_name = match.group(1) or match.group(2)
+        return os.environ.get(var_name, match.group(0))
+
+    pattern = r'\$(\w+|\{[^}]*\})'
+    expanded = re.sub(pattern, replace_var, user_input)
+    return expanded
+
 def parse_input(user_input):
+    user_input = expand_variables(user_input)
     if "|" in user_input:
         commands = [shlex.split(cmd.strip()) for cmd in user_input.split("|")]
     else:
@@ -91,6 +103,7 @@ def parse_input(user_input):
     return parsed_commands
 
 def execute_command(command, stdin=None, stdout=subprocess.PIPE):
+    global previous_directory
     args = command["args"]
     input_file = command["input_file"]
     output_file = command["output_file"]
@@ -103,11 +116,20 @@ def execute_command(command, stdin=None, stdout=subprocess.PIPE):
         return False
     elif args[0] == "cd":
         try:
-            target = args[1] if len(args) > 1 else os.path.expanduser("~")
+            if len(args) > 1:
+                target = args[1]
+                target = os.path.expanduser(target)
+                if target == "-":
+                    target = os.path.expanduser(previous_directory)
+            elif len(args) == 1:
+                target = os.path.expanduser("~")
             if not target:
                 print(f"{RED}cd: missing directory{RESET}")
                 return True
+            previous_directory = os.getcwd()
+            os.environ["OLDPWD"] = previous_directory            
             os.chdir(target)
+            os.environ["PWD"] = target
             return True
         except Exception as e:
             print(f"{RED}cd: {e}{RESET}")

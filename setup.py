@@ -9,7 +9,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 
 setup(
     name="llamashell",
-    version="0.0.1",
+    version="0.0.2",
     author="Ashraff Hathibelagal",
     description="A powerful shell that's powered by a locally running LLM",
     long_description=long_description,

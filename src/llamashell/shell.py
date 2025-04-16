@@ -13,7 +13,7 @@ CYAN = "\033[36m"
 RED = "\033[31m"
 
 def show_welcome():
-    print(f"{BOLD}{YELLOW}Welcome to LLM Shell v{__VERSION__}{RESET}")
+    print(f"{BOLD}{YELLOW}Welcome to LLaMa Shell v{__VERSION__}{RESET}")
 
 def parse_input(user_input):
     return shlex.split(user_input)

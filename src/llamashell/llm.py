@@ -2,6 +2,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 
 class LLM:
+
     def __init__(self, model_name):
         self.model_name = model_name
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -11,6 +12,9 @@ class LLM:
         self.model.eval()
 
     def send_message(self, message):
-        pass
+        chat = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": message},
+        ]
 
     

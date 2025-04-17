@@ -23,7 +23,8 @@ setup(
         "torch",
         "huggingface_hub",
         "requests",
-        "prompt_toolkit"
+        "prompt_toolkit",
+        "dnspython"
     ],
     entry_points={
         "console_scripts": [

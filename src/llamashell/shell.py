@@ -19,10 +19,6 @@ CYAN = "\033[36m"
 RED = "\033[31m"
 
 previous_directory = "~"
-llm_model = "meta-llama/Llama-3.2-1B-Instruct"
-print(f"""{YELLOW}Loading {llm_model.split("/")[1]}...{RESET}""")
-llm = LLM(llm_model)
-print(f"{YELLOW}LLM is now ready.{RESET}")
 
 def show_welcome():
     print(f"{BOLD}{YELLOW}Welcome to LLaMa Shell v{__VERSION__}{RESET}")
@@ -221,7 +217,7 @@ def execute_pipeline(commands):
 
     return True
 
-def main_loop():
+def main_loop(llm_name):
     show_welcome()
     style = Style.from_dict({
         'prompt': 'bold #00cccc'
@@ -233,11 +229,20 @@ def main_loop():
         completer=ShellCompleter(),
         complete_while_typing=False
     )
+    print(f"""{YELLOW}Loading {llm_name.split("/")[1]}...{RESET}""")
+    llm = LLM(llm_name)
+    print(f"{YELLOW}LLM is now ready.{RESET}")
 
     while True:
         try:
             user_input = session.prompt().strip()
             if not user_input:
+                continue
+            if user_input.startswith("-- "):
+                user_input = user_input[3:]
+                llm_output = llm.send_message(user_input)
+                print(f"{BOLD}{YELLOW}{llm_name}: {RESET}")
+                print(f"{CYAN}{llm_output}{RESET}")
                 continue
 
             commands = parse_input(user_input)

@@ -1,7 +1,11 @@
 from .shell import main_loop
+import argparse
 
-def main():    
-    main_loop()
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", type=str, default="meta-llama/Llama-3.2-1B-Instruct", help="LLM to use")
+    args = parser.parse_args()
+    main_loop(args.model)
 
 if __name__ == "__main__":
     main()

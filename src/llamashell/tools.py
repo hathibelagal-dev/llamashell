@@ -22,10 +22,10 @@ def tool_change_directory(absolute_path: str) -> bool:
     """Change the current working directory to the given absolute path.
 
     Args:
-        absolute_path (str): The absolute path of the directory to change to.
+        absolute_path: The absolute path of the directory to change to.
 
     Returns:
-        bool: True if the directory was changed successfully, False otherwise.
+        True if the directory was changed successfully, False otherwise.
     """
     try:
         os.chdir(absolute_path)
@@ -38,10 +38,10 @@ def tool_make_directory(absolute_path: str) -> bool:
     """Create a directory at the given absolute path.
 
     Args:
-        absolute_path (str): The absolute path of the directory to create.
+        absolute_path: The absolute path of the directory to create.
 
     Returns:
-        bool: True if the directory was created successfully, False otherwise.
+        True if the directory was created successfully, False otherwise.
     """
     try:
         os.makedirs(absolute_path)
@@ -53,11 +53,11 @@ def tool_create_file(absolute_path: str, contents: str) -> bool:
     """Create a file at the given absolute path with the given contents.
 
     Args:
-        absolute_path (str): The absolute path of the file to create.
-        contents (str): The contents of the file to create.
+        absolute_path: The absolute path of the file to create.
+        contents: The contents of the file to create.
 
     Returns:
-        bool: True if the file was created successfully, False otherwise.
+        True if the file was created successfully, False otherwise.
     """
     try:
         with open(absolute_path, "w") as f:
@@ -70,10 +70,10 @@ def tool_read_file(absolute_path: str) -> str:
     """Read the contents of a file at the given absolute path.
 
     Args:
-        absolute_path (str): The absolute path of the file to read.
+        absolute_path: The absolute path of the file to read.
 
     Returns:
-        str: The contents of the file.
+        The contents of the file.
     """
     try:
         with open(absolute_path, "r") as f:
@@ -85,10 +85,10 @@ def tool_list_directory(absolute_path: str) -> list:
     """List the contents of a directory at the given absolute path.
 
     Args:
-        absolute_path (str): The absolute path of the directory to list.
+        absolute_path: The absolute path of the directory to list.
 
     Returns:
-        list: A list of the contents of the directory.
+        A list of the contents of the directory.
     """    
     try:
         return os.listdir(absolute_path)
@@ -99,11 +99,11 @@ def tool_rename_file(old_path: str, new_path: str) -> bool:
     """Rename a file from the old path to the new path.
 
     Args:
-        old_path (str): The old path of the file to rename.
-        new_path (str): The new path of the file to rename.
+        old_path: The old path of the file to rename.
+        new_path: The new path of the file to rename.
 
     Returns:
-        bool: True if the file was renamed successfully, False otherwise.
+        True if the file was renamed successfully, False otherwise.
     """
     try:
         os.rename(old_path, new_path)
@@ -115,10 +115,10 @@ def tool_delete_file(absolute_path: str) -> bool:
     """Delete a file at the given absolute path.
 
     Args:
-        absolute_path (str): The absolute path of the file to delete.
+        absolute_path: The absolute path of the file to delete.
 
     Returns:
-        bool: True if the file was deleted successfully, False otherwise.
+        True if the file was deleted successfully, False otherwise.
     """
     try:
         os.remove(absolute_path)
@@ -130,14 +130,10 @@ def tool_run_python_file(absolute_path: str) -> str:
     """Run a Python file at the given absolute path.
 
     Args:
-        absolute_path (str): The absolute path of the Python file to run.
+        absolute_path: The absolute path of the Python file to run.
 
     Returns:
-        str: The combined stdout and stderr output of the Python file.
-
-    Raises:
-        FileNotFoundError: If the file does not exist.
-        subprocess.SubprocessError: If the subprocess fails to execute.
+        The combined stdout and stderr output of the Python file.
     """
     if not os.path.isfile(absolute_path):
         raise FileNotFoundError(f"No file found at {absolute_path}")
@@ -159,11 +155,11 @@ def tool_run_command(command: str, shell: bool = False) -> str:
     """Run a command and return the combined stdout and stderr output.
 
     Args:
-        command (str): The command to run.
-        shell (bool): If True, run the command through the shell. Defaults to False.
+        command: The command to run.
+        shell: If True, run the command through the shell. Defaults to False.
 
     Returns:
-        str: The combined stdout and stderr output of the command.
+        The combined stdout and stderr output of the command.
     """
     try:
         if shell:
@@ -188,10 +184,10 @@ def tool_get_python_package_version(package_name: str) -> str:
     """Check if a Python package is installed and return its version.
 
     Args:
-        package_name (str): The name of the package to check.
+        package_name: The name of the package to check.
 
     Returns:
-        str: The version of the package if installed, or an empty string if not installed.
+        The version of the package if installed, or an empty string if not installed.
     """
     try:
         if importlib.util.find_spec(package_name) is not None:
@@ -204,13 +200,11 @@ def tool_install_python_package(package_name: str, version: str = None) -> bool:
     """Install a Python package using pip.
 
     Args:
-        package_name (str): The name of the package to install.
-        version (str, optional): The specific version to install (e.g., '2.28.1').
-                                If None, installs the latest version.
+        package_name: The name of the package to install.
+        version: The specific version to install (e.g., '2.28.1'). If None, installs the latest version.
 
     Returns:
-        bool: True if the package was installed successfully or is already installed
-              with the correct version, False otherwise.
+        True if the package was installed successfully or is already installed with the correct version, False otherwise.
     """
     package_spec = f"{package_name}=={version}" if version else package_name
 
@@ -247,10 +241,10 @@ def tool_uninstall_python_package(package_name: str) -> bool:
     """Uninstall a Python package using pip.
 
     Args:
-        package_name (str): The name of the package to uninstall.
+        package_name: The name of the package to uninstall.
 
     Returns:
-        bool: True if the package was uninstalled successfully, False otherwise.
+        True if the package was uninstalled successfully, False otherwise.
     """
     try:
         result = subprocess.run(
@@ -271,7 +265,7 @@ def tool_get_current_user() -> str:
     """Get the current user.
 
     Returns:
-        str: The current user.
+        The current user.
     """
     return os.getlogin()
 
@@ -279,7 +273,7 @@ def tool_get_current_time() -> str:
     """Get the current time.
 
     Returns:
-        str: The current time.
+        The current time.
     """
     return os.popen("date").read().strip()
 
@@ -287,7 +281,7 @@ def tool_get_current_day() -> str:
     """Get the current day.
 
     Returns:
-        str: The current day.
+        The current day.
     """
     return os.popen("date +'%A'").read().strip()
 
@@ -295,7 +289,7 @@ def tool_get_current_month() -> str:
     """Get the current month.
 
     Returns:
-        str: The current month.
+        The current month.
     """
     return os.popen("date +'%B'").read().strip()
 
@@ -303,7 +297,7 @@ def tool_get_current_year() -> str:
     """Get the current year.
 
     Returns:
-        str: The current year.
+        The current year.
     """
     return os.popen("date +'%Y'").read().strip()
 
@@ -311,17 +305,13 @@ def tool_get_dns_records(domain: str, record_types: list[str] = None) -> str:
     """Retrieve DNS records for a given domain.
 
     Args:
-        domain (str): The domain name to query (e.g., 'example.com').
-        record_types (list[str], optional): List of DNS record types to query (e.g., ['A', 'MX', 'NS']).
+        domain: The domain name to query (e.g., 'example.com').
+        record_types: List of DNS record types to query (e.g., ['A', 'MX', 'NS']).
                                            If None, queries common types: A, MX, NS, TXT, CNAME, AAAA.
 
     Returns:
-        dict: A dictionary mapping record types to lists of record values.
+        A dictionary mapping record types to lists of record values.
               Returns an empty list for a record type if no records are found or if an error occurs.
-
-    Example:
-        >>> get_dns_records('example.com', ['A', 'MX'])
-        {'A': ['93.184.216.34'], 'MX': ['0 example.com.']}
     """
     if record_types is None:
         record_types = ['A', 'MX', 'NS', 'TXT', 'CNAME', 'AAAA']
@@ -359,7 +349,7 @@ def tool_list_python_packages(pattern: str = None) -> list:
         pattern: The pattern to search for in the package names
     
     Returns:
-        list: A list of all installed python packages
+        A list of all installed python packages
     """
     try:
         result = subprocess.run(
@@ -378,8 +368,7 @@ def tool_get_system_information() -> str:
     """Return system information equivalent to the 'uname -a' command.
 
     Returns:
-        str: A string containing system information including OS, hostname,
-             kernel version, release, and architecture.
+        A string containing system information including OS, hostname, kernel version, release, and architecture.
 
     Example:
         On Linux: 'Linux hostname 5.15.0-73-generic #80-Ubuntu SMP x86_64 GNU/Linux'

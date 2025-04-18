@@ -217,6 +217,17 @@ def execute_pipeline(commands):
 
     return True
 
+def render_llm_output(text):
+    start_pattern = "<|start_header_id|>assistant<|end_header_id|>"
+    end_pattern = "<|eot_id|>"
+    start_index = text.rfind(start_pattern)
+    end_index = text.find(end_pattern, start_index)
+    end_pattern2 = "<|eom_id|>"
+    end_index2 = text.find(end_pattern2, start_index)
+    if end_index2 != -1:
+        end_index = end_index2
+    return text[start_index + len(start_pattern):end_index].strip()
+
 def main_loop(llm_name):
     show_welcome()
     style = Style.from_dict({
@@ -243,7 +254,7 @@ def main_loop(llm_name):
                     user_input[3:], use_tools=user_input.startswith("++ ")
                 )
                 print(f"{BOLD}{YELLOW}{llm_name}: {RESET}")
-                print(f"{CYAN}{llm_output}{RESET}")
+                print(f"{YELLOW}{render_llm_output(llm_output)}{RESET}")
                 continue
 
             commands = parse_input(user_input)

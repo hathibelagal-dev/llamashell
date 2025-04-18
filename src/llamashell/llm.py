@@ -4,6 +4,10 @@ from . import tools
 from transformers.utils import get_json_schema
 
 class LLM:
+    system_message = """
+    You are a very helpful assistant and programmer. You like to keep your answers
+    short and to the point because you are very confident.
+    """
 
     def __init__(self, model_name):
         self.model_name = model_name
@@ -26,13 +30,13 @@ class LLM:
 
     def send_message(self, message, use_tools = False):
         chat = [
-            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "system", "content": self.system_message},
             {"role": "user", "content": message},
         ]
         inputs = self.tokenizer.apply_chat_template(chat, tools=self.get_tools() if use_tools else None, add_generation_prompt=True, return_dict=True, return_tensors="pt")
         inputs = inputs.to(self.device)
         inputs = {k: v for k, v in inputs.items()}
-        outputs = self.model.generate(**inputs, max_new_tokens=128, 
+        outputs = self.model.generate(**inputs, max_new_tokens=256, 
                 do_sample=True, top_p=0.95, temperature=0.8,
                 pad_token_id=self.tokenizer.eos_token_id,
         )

@@ -229,35 +229,6 @@ def execute_pipeline(commands):
 
     return True
 
-def render_llm_output_llama(text):
-    start_pattern = "<|start_header_id|>assistant<|end_header_id|>"
-    end_pattern = "<|eot_id|>"
-    start_index = text.rfind(start_pattern)
-    end_index = text.find(end_pattern, start_index)
-    end_pattern2 = "<|eom_id|>"
-    end_index2 = text.find(end_pattern2, start_index)
-    if end_index2 != -1:
-        end_index = end_index2
-    text = text[start_index + len(start_pattern):end_index].strip()    
-    return text
-
-def render_llm_output_qwen(text):
-    start_pattern = "<|im_start|>assistant"
-    end_pattern = "<|im_end|>"
-    start_index = text.rfind(start_pattern)
-    end_index = text.find(end_pattern, start_index)
-    return text[start_index + len(start_pattern):end_index].strip()
-
-def render_llm_output_gemma(text):
-    start_pattern = "<start_of_turn>model"
-    end_pattern = "<end_of_turn>"
-    start_index = text.rfind(start_pattern)
-    end_index = text.find(end_pattern, start_index)
-    return text[start_index + len(start_pattern):end_index].strip()
-
-def generic_renderer(text):
-    return text
-
 def main_loop(llm_name):
     llm_name = llm_name.strip().lower()
     show_welcome()
@@ -274,9 +245,6 @@ def main_loop(llm_name):
     print(f"""{YELLOW}Loading {llm_name.split("/")[1]}...{RESET}""")
     llm = LLM(llm_name)
     print(f"{YELLOW}LLM is now ready.{RESET}")
-    renderer = render_llm_output_llama if llm_name.startswith("meta-llama") else generic_renderer
-    renderer = render_llm_output_qwen if llm_name.startswith("qwen") else renderer
-    renderer = render_llm_output_gemma if llm_name.startswith("google/gemma") else renderer
 
     while True:
         try:
@@ -284,13 +252,17 @@ def main_loop(llm_name):
             if not user_input:
                 continue
             if user_input.startswith("-- "):
-                llm_output = llm.send_message(
+                print(f"{BOLD}{YELLOW}{llm_name}: {RESET}")
+                print(f"{YELLOW}")
+                llm.send_message(
                     user_input[3:]
                 )
-                llm_output = renderer(llm_output)
-                llm.add_message("assistant", llm_output)
-                print(f"{BOLD}{YELLOW}{llm_name}: {RESET}")
-                print(f"{YELLOW}{llm_output}{RESET}")
+                print(f"{RESET}")
+                continue
+            if user_input.startswith("--save-chat-logs"):
+                contents = "\n\n".join([f"{history_item['role']}: {history_item['content']}" for history_item in llm.chat])
+                filename = save_response(contents=contents, prefix="chat_logs")
+                print(f"{YELLOW}Chat logs saved to {filename}{RESET}")
                 continue
             if user_input.startswith("--save"):
                 parts = shlex.split(user_input)
@@ -298,7 +270,15 @@ def main_loop(llm_name):
                 if len(parts) == 2:
                     filename=parts[1]
                 contents = llm.chat[-1]["content"]
-                save_response(filename=filename, contents=contents)
+                filename = save_response(filename=filename, contents=contents)
+                print(f"{YELLOW}Response saved to {filename}{RESET}")
+                continue            
+            if user_input.startswith("--view-chat-logs"):
+                print(f"{BOLD}{YELLOW}Chat Logs:{RESET}")
+                for history_item in llm.chat:
+                    print(f"{YELLOW}{history_item['role']}{RESET}")
+                    print(f"{YELLOW}{history_item['content']}{RESET}")
+                    print(f"{YELLOW}-------------{RESET}")
                 continue
             if user_input.startswith("--read"):
                 parts = shlex.split(user_input)

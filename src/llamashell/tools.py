@@ -1,14 +1,14 @@
 import datetime
 
-def save_response(filename=None, contents=None):
+def save_response(filename=None, contents=None, prefix="llm_response"):
     if not filename:
         now = datetime.datetime.now()
         timestamp = now.strftime("%Y%m%d_%H%M%S")
-        filename = f"llm_response_{timestamp}.md"
+        filename = f"{prefix}_{timestamp}.md"
     try:
         with open(filename, "a", encoding="utf-8") as f:
             f.write((contents if contents else "") + "\n")
-        print(f"Response saved to {filename}")
+        return filename
     except Exception as e:
         print(f"Error saving response to {filename}: {e}")
 

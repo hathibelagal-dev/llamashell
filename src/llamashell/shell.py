@@ -8,6 +8,8 @@ from prompt_toolkit.styles import Style
 from prompt_toolkit.completion import Completer, Completion
 from . import __VERSION__
 from .llm import LLM
+import json
+from . import tools
 
 BOLD = "\033[1m"
 GREEN = "\033[32m"
@@ -228,7 +230,24 @@ def render_llm_output_llama(text):
     end_index2 = text.find(end_pattern2, start_index)
     if end_index2 != -1:
         end_index = end_index2
-    return text[start_index + len(start_pattern):end_index].strip()
+    text = text[start_index + len(start_pattern):end_index].strip()
+    tool_call_pattern = "<|python_tag|>"
+    if text.find(tool_call_pattern) != -1:
+        text = text[text.find(tool_call_pattern) + len(tool_call_pattern):]
+        try:
+            tool_call = json.loads(text)
+            print(f"Calling tool: {tool_call['function']['name']}")
+            tool = getattr(tools, tool_call['function']['name'])
+            args = tool_call['function']['parameters']
+            if args:
+                args = args['properties']
+                output = tool(**args)
+            else:
+                output = tool()
+            return f"Got output from tool: {output}"
+        except:
+            pass
+    return text
 
 def render_llm_output_qwen(text):
     start_pattern = "<|im_start|>assistant"

@@ -49,7 +49,7 @@ def tool_make_directory(absolute_path: str) -> bool:
     except OSError:
         return False
     
-def tool_create_file(absolute_path: str, contents: str) -> bool:
+def tool_write_file(absolute_path: str, contents: str) -> bool:
     """Create a file at the given absolute path with the given contents.
 
     Args:

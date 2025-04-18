@@ -1,4 +1,11 @@
 # llamashell
+
+![PyPI - Version](https://img.shields.io/pypi/v/llamashell)
+![Pepy Total Downloads](https://img.shields.io/pepy/dt/llamashell)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/llamashell)
+![PyPI - License](https://img.shields.io/pypi/l/llamashell)
+![PyPI - Status](https://img.shields.io/pypi/status/llamashell)
+
  **llamashell** is a powerful shell that's powered by a locally running LLM. We have tested it with Llama 3.2, Qwen 2.5, and Gemma 3.
 
 ## Features

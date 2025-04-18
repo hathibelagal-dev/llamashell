@@ -8,8 +8,8 @@ from prompt_toolkit.styles import Style
 from prompt_toolkit.completion import Completer, Completion
 from . import __VERSION__
 from .llm import LLM
-import json
-from . import tools
+from .tools import save_response, read_file
+import os
 
 BOLD = "\033[1m"
 GREEN = "\033[32m"
@@ -20,12 +20,20 @@ WHITE = "\033[37m"
 CYAN = "\033[36m"
 RED = "\033[31m"
 
+LOGO = """
+    __    __          __  ___         _____ __         ____
+   / /   / /   ____ _/  |/  /___ _   / ___// /_  ___  / / /
+  / /   / /   / __ `/ /|_/ / __ `/   \__ \/ __ \/ _ \/ / / 
+ / /___/ /___/ /_/ / /  / / /_/ /   ___/ / / / /  __/ / /  
+/_____/_____/\__,_/_/  /_/\__,_/   /____/_/ /_/\___/_/_/   
+"""
+
 previous_directory = "~"
 history_path = os.path.expanduser("~/.llamashell_history")
 history = FileHistory(history_path)
 
 def show_welcome():
-    print(f"{BOLD}{YELLOW}Welcome to LLaMa Shell v{__VERSION__}{RESET}")
+    print(f"{BOLD}{YELLOW}{LOGO}\nVersion {__VERSION__}{RESET}")
 
 class ShellCompleter(Completer):
     def __init__(self):
@@ -140,7 +148,7 @@ def execute_command(command, stdin=None, stdout=subprocess.PIPE):
             print(f"{RED}cd: {e}{RESET}")
             return True
 
-    interactive_commands = ["vi", "vim", "ps", "top", "less", "nano", "more"]
+    interactive_commands = ["vi", "vim", "top", "less", "nano", "more"]
     if args[0] in interactive_commands or (args[0] in ["python", "python3"] and len(args) == 1):
         if input_file or output_file or append_file or stdin:
             print(f"{RED}Interactive commands cannot use redirection or pipes{RESET}")
@@ -230,23 +238,7 @@ def render_llm_output_llama(text):
     end_index2 = text.find(end_pattern2, start_index)
     if end_index2 != -1:
         end_index = end_index2
-    text = text[start_index + len(start_pattern):end_index].strip()
-    tool_call_pattern = "<|python_tag|>"
-    if text.find(tool_call_pattern) != -1:
-        text = text[text.find(tool_call_pattern) + len(tool_call_pattern):]
-        try:
-            tool_call = json.loads(text)
-            print(f"Calling tool: {tool_call['function']['name']}")
-            tool = getattr(tools, tool_call['function']['name'])
-            args = tool_call['function']['parameters']
-            if args:
-                args = args['properties']
-                output = tool(**args)
-            else:
-                output = tool()
-            return f"Got output from tool: {output}"
-        except:
-            pass
+    text = text[start_index + len(start_pattern):end_index].strip()    
     return text
 
 def render_llm_output_qwen(text):
@@ -291,12 +283,38 @@ def main_loop(llm_name):
             user_input = session.prompt().strip()
             if not user_input:
                 continue
-            if user_input.startswith("-- ") or user_input.startswith("++ "):
+            if user_input.startswith("-- "):
                 llm_output = llm.send_message(
-                    user_input[3:], use_tools=user_input.startswith("++ ")
+                    user_input[3:]
                 )
+                llm_output = renderer(llm_output)
+                llm.add_message("assistant", llm_output)
                 print(f"{BOLD}{YELLOW}{llm_name}: {RESET}")
-                print(f"{YELLOW}{renderer(llm_output)}{RESET}")
+                print(f"{YELLOW}{llm_output}{RESET}")
+                continue
+            if user_input.startswith("--save"):
+                parts = shlex.split(user_input)
+                filename = None
+                if len(parts) == 2:
+                    filename=parts[1]
+                contents = llm.chat[-1]["content"]
+                save_response(filename=filename, contents=contents)
+                continue
+            if user_input.startswith("--read"):
+                parts = shlex.split(user_input)
+                if len(parts) == 2:
+                    filename = parts[1]
+                    contents = read_file(filename)
+                    if contents:
+                        print(f"{YELLOW}{contents}{RESET}")
+                        llm.add_message("user", user_input)
+                        llm.add_message("assistant", contents)
+                else:
+                    print(f"{RED}Usage: --read <filename>{RESET}")
+                continue
+            if user_input.startswith("--clear"):
+                llm.chat = llm.original_chat.copy()
+                print(f"{YELLOW}Chat sessions cleared.{RESET}")
                 continue
             if user_input.strip() == "history":
                 print(f"{BOLD}{YELLOW}History:{RESET}")

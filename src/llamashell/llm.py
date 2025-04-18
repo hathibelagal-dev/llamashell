@@ -1,6 +1,5 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
-from . import tools
 from transformers.utils import get_json_schema
 
 class LLM:
@@ -18,22 +17,22 @@ class LLM:
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name, torch_dtype=torch.bfloat16 if self.device != "mps" else torch.float16,
         ).to(self.device)
+
+        self.chat = [
+            {"role": "system", "content": self.system_message}            
+        ]
+        self.original_chat = self.chat.copy()
+
         self.model.eval()
 
-    def get_tools(self):
-        _tools = [getattr(tools, tool) for tool in dir(tools) if tool.startswith("tool_")]
-        output = []
-        for tool in _tools:
-            schema = get_json_schema(tool)
-            output.append(schema)
-        return output
+    def add_message(self, role, content):
+        self.chat.append({
+            "role": role, "content": content
+        })
 
-    def send_message(self, message, use_tools = False):
-        chat = [
-            {"role": "system", "content": self.system_message},
-            {"role": "user", "content": message},
-        ]
-        inputs = self.tokenizer.apply_chat_template(chat, tools=self.get_tools() if use_tools else None, add_generation_prompt=True, return_dict=True, return_tensors="pt")
+    def send_message(self, message):
+        self.add_message(role="user", content=message)
+        inputs = self.tokenizer.apply_chat_template(self.chat, tools=None, add_generation_prompt=True, return_dict=True, return_tensors="pt")
         inputs = inputs.to(self.device)
         inputs = {k: v for k, v in inputs.items()}
         outputs = self.model.generate(**inputs, max_new_tokens=1024, 

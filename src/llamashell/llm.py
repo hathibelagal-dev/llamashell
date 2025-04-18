@@ -36,7 +36,7 @@ class LLM:
         inputs = self.tokenizer.apply_chat_template(chat, tools=self.get_tools() if use_tools else None, add_generation_prompt=True, return_dict=True, return_tensors="pt")
         inputs = inputs.to(self.device)
         inputs = {k: v for k, v in inputs.items()}
-        outputs = self.model.generate(**inputs, max_new_tokens=256, 
+        outputs = self.model.generate(**inputs, max_new_tokens=1024, 
                 do_sample=True, top_p=0.95, temperature=0.8,
                 pad_token_id=self.tokenizer.eos_token_id,
         )

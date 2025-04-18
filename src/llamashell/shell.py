@@ -219,7 +219,7 @@ def execute_pipeline(commands):
 
     return True
 
-def render_llm_output(text):
+def render_llm_output_llama(text):
     start_pattern = "<|start_header_id|>assistant<|end_header_id|>"
     end_pattern = "<|eot_id|>"
     start_index = text.rfind(start_pattern)
@@ -230,7 +230,25 @@ def render_llm_output(text):
         end_index = end_index2
     return text[start_index + len(start_pattern):end_index].strip()
 
+def render_llm_output_qwen(text):
+    start_pattern = "<|im_start|>assistant"
+    end_pattern = "<|im_end|>"
+    start_index = text.rfind(start_pattern)
+    end_index = text.find(end_pattern, start_index)
+    return text[start_index + len(start_pattern):end_index].strip()
+
+def render_llm_output_gemma(text):
+    start_pattern = "<start_of_turn>model"
+    end_pattern = "<end_of_turn>"
+    start_index = text.rfind(start_pattern)
+    end_index = text.find(end_pattern, start_index)
+    return text[start_index + len(start_pattern):end_index].strip()
+
+def generic_renderer(text):
+    return text
+
 def main_loop(llm_name):
+    llm_name = llm_name.strip().lower()
     show_welcome()
     style = Style.from_dict({
         'prompt': 'bold #00cccc'
@@ -245,6 +263,9 @@ def main_loop(llm_name):
     print(f"""{YELLOW}Loading {llm_name.split("/")[1]}...{RESET}""")
     llm = LLM(llm_name)
     print(f"{YELLOW}LLM is now ready.{RESET}")
+    renderer = render_llm_output_llama if llm_name.startswith("meta-llama") else generic_renderer
+    renderer = render_llm_output_qwen if llm_name.startswith("qwen") else renderer
+    renderer = render_llm_output_gemma if llm_name.startswith("google/gemma") else renderer
 
     while True:
         try:
@@ -256,7 +277,7 @@ def main_loop(llm_name):
                     user_input[3:], use_tools=user_input.startswith("++ ")
                 )
                 print(f"{BOLD}{YELLOW}{llm_name}: {RESET}")
-                print(f"{YELLOW}{render_llm_output(llm_output)}{RESET}")
+                print(f"{YELLOW}{renderer(llm_output)}{RESET}")
                 continue
             if user_input.strip() == "history":
                 print(f"{BOLD}{YELLOW}History:{RESET}")

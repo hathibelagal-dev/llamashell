@@ -238,9 +238,10 @@ def main_loop(llm_name):
             user_input = session.prompt().strip()
             if not user_input:
                 continue
-            if user_input.startswith("-- "):
-                user_input = user_input[3:]
-                llm_output = llm.send_message(user_input)
+            if user_input.startswith("-- ") or user_input.startswith("++ "):
+                llm_output = llm.send_message(
+                    user_input[3:], use_tools=user_input.startswith("++ ")
+                )
                 print(f"{BOLD}{YELLOW}{llm_name}: {RESET}")
                 print(f"{CYAN}{llm_output}{RESET}")
                 continue

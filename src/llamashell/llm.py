@@ -12,7 +12,7 @@ class LLM:
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.tokenizer.padding_side = "left"
         self.model = AutoModelForCausalLM.from_pretrained(
-            model_name, torch_dtype=torch.half,
+            model_name, torch_dtype=torch.bfloat16,
         ).to(self.device)
         self.model.eval()
 
@@ -24,17 +24,17 @@ class LLM:
             output.append(schema)
         return output
 
-    def send_message(self, message):
+    def send_message(self, message, use_tools = False):
         chat = [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": message},
         ]
-        inputs = self.tokenizer.apply_chat_template(chat, tools=self.get_tools(), add_generation_prompt=True, return_dict=True, return_tensors="pt")
+        inputs = self.tokenizer.apply_chat_template(chat, tools=self.get_tools() if use_tools else None, add_generation_prompt=True, return_dict=True, return_tensors="pt")
         inputs = inputs.to(self.device)
         inputs = {k: v for k, v in inputs.items()}
         outputs = self.model.generate(**inputs, max_new_tokens=128, 
                 do_sample=True, top_p=0.95, temperature=0.8,
-                pad_token_id=self.tokenizer.eos_token_id
+                pad_token_id=self.tokenizer.eos_token_id,
         )
         output = self.tokenizer.decode(outputs[0])
         return output

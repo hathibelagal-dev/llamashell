@@ -1,5 +1,5 @@
 # llamashell
- `llamashell` is a powerful shell that's powered by a locally running LLM (ideally Llama 3.x, Qwen 2.5, or Gemma 3)
+ `llamashell` is a powerful shell that's powered by a locally running LLM. We have tested it with Llama 3.2, Qwen 2.5, and Gemma 3.
 
 ## Features
 

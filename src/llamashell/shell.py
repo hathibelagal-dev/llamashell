@@ -3,7 +3,7 @@ import subprocess
 import shlex
 import re
 from prompt_toolkit import PromptSession
-from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.history import FileHistory
 from prompt_toolkit.styles import Style
 from prompt_toolkit.completion import Completer, Completion
 from . import __VERSION__
@@ -19,6 +19,8 @@ CYAN = "\033[36m"
 RED = "\033[31m"
 
 previous_directory = "~"
+history_path = os.path.expanduser("~/.llamashell_history")
+history = FileHistory(history_path)
 
 def show_welcome():
     print(f"{BOLD}{YELLOW}Welcome to LLaMa Shell v{__VERSION__}{RESET}")
@@ -234,7 +236,7 @@ def main_loop(llm_name):
         'prompt': 'bold #00cccc'
     })
     session = PromptSession(
-        history=InMemoryHistory(),
+        history=history,
         style=style,
         message=lambda: [('class:prompt', f'{os.getcwd()}> ')],
         completer=ShellCompleter(),
@@ -255,6 +257,11 @@ def main_loop(llm_name):
                 )
                 print(f"{BOLD}{YELLOW}{llm_name}: {RESET}")
                 print(f"{YELLOW}{render_llm_output(llm_output)}{RESET}")
+                continue
+            if user_input.strip() == "history":
+                print(f"{BOLD}{YELLOW}History:{RESET}")
+                for history_item in history.get_strings():
+                    print(f"  {YELLOW}{history_item}")
                 continue
 
             commands = parse_input(user_input)
